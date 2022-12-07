@@ -23,10 +23,13 @@ pub struct Stratagem {
     pub response: Shape,
 }
 
-pub fn parse_strategy(input: &str) -> Vec<Stratagem> {
+pub fn parse<F>(input: &str, from_str: F) -> Vec<Stratagem>
+where
+    F: Fn(&str) -> Result<Stratagem, ()>,
+{
     input
         .lines()
-        .map(|l| l.parse().expect("line should be in expected format"))
+        .map(|l| from_str(l).expect("line should be in expected format"))
         .collect()
 }
 
@@ -37,22 +40,46 @@ pub fn calculate_score(input: &[Stratagem]) -> u64 {
 }
 
 pub fn part1(input: &str) -> u64 {
-    calculate_score(&parse_strategy(input))
+    calculate_score(&parse(input, Stratagem::from_str_part1))
+}
+
+pub fn part2(input: &str) -> u64 {
+    calculate_score(&parse(input, Stratagem::from_str_part2))
 }
 
 pub fn main() {
     let input = std::fs::read_to_string("input/2022/day2.txt").unwrap();
-    let score = part1(&input);
+    let score = part2(&input);
     println!("{score}");
 }
 
-impl FromStr for Stratagem {
-    type Err = ();
-
-    fn from_str(s: &str) -> Result<Self, Self::Err> {
+impl Stratagem {
+    fn from_str_part1(s: &str) -> Result<Self, ()> {
         let mut parts = s.split_whitespace();
         let opponent = parts.next().ok_or(())?.parse()?;
         let response = parts.next().ok_or(())?.parse()?;
+        Ok(Stratagem { opponent, response })
+    }
+
+    fn from_str_part2(s: &str) -> Result<Self, ()> {
+        let mut parts = s.split_whitespace();
+        let opponent = parts.next().ok_or(())?.parse()?;
+        let outcome: Outcome = parts.next().ok_or(())?.parse()?;
+
+        let response = match outcome {
+            Outcome::Lose => match opponent {
+                Shape::Rock => Shape::Scissors,
+                Shape::Paper => Shape::Rock,
+                Shape::Scissors => Shape::Paper,
+            },
+            Outcome::Draw => opponent,
+            Outcome::Win => match opponent {
+                Shape::Rock => Shape::Paper,
+                Shape::Paper => Shape::Scissors,
+                Shape::Scissors => Shape::Rock,
+            },
+        };
+
         Ok(Stratagem { opponent, response })
     }
 }
@@ -65,6 +92,19 @@ impl FromStr for Shape {
             "A" | "X" => Ok(Shape::Rock),
             "B" | "Y" => Ok(Shape::Paper),
             "C" | "Z" => Ok(Shape::Scissors),
+            _ => Err(()),
+        }
+    }
+}
+
+impl FromStr for Outcome {
+    type Err = ();
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        match s {
+            "X" => Ok(Outcome::Lose),
+            "Y" => Ok(Outcome::Draw),
+            "Z" => Ok(Outcome::Win),
             _ => Err(()),
         }
     }
@@ -91,11 +131,19 @@ mod tests {
     use super::*;
 
     #[test]
-    pub fn example() {
+    pub fn example_part1() {
         let input = r"A Y
 B X
 C Z";
         assert_eq!(15, part1(&input));
+    }
+
+    #[test]
+    pub fn example_part2() {
+        let input = r"A Y
+B X
+C Z";
+        assert_eq!(12, part2(&input));
     }
 
     #[test]
