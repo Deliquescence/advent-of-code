@@ -13,6 +13,16 @@ fn contains_symmetric(left: &RangeInclusive<u64>, right: &RangeInclusive<u64>) -
     contains(left, right) || contains(right, left)
 }
 
+fn overlap(left: &RangeInclusive<u64>, right: &RangeInclusive<u64>) -> bool {
+    if left.start() == right.start() || left.end() == right.end() {
+        true
+    } else if left.start() < right.start() {
+        right.start() <= left.end()
+    } else {
+        left.start() <= right.end()
+    }
+}
+
 pub fn part1(input: &str) -> usize {
     input
         .lines()
@@ -21,9 +31,18 @@ pub fn part1(input: &str) -> usize {
         .count()
 }
 
+pub fn part2(input: &str) -> usize {
+    input
+        .lines()
+        .map(|l| PairAssignments::from_str(l).expect("line format"))
+        .filter(|pair| overlap(&pair.left, &pair.right))
+        .count()
+}
+
 pub fn main() {
     let input = std::fs::read_to_string("input/2022/day4.txt").unwrap();
     dbg!(part1(&input));
+    dbg!(part2(&input));
 }
 
 impl FromStr for PairAssignments {
@@ -57,5 +76,10 @@ mod tests {
     #[test]
     pub fn part1_example() {
         assert_eq!(2, part1(EXAMPLE));
+    }
+
+    #[test]
+    pub fn part2_example() {
+        assert_eq!(4, part2(EXAMPLE));
     }
 }
