@@ -16,6 +16,14 @@ impl Rucksack {
             .find(|&i| self.second_half.contains(i))
             .copied()
     }
+
+    pub fn contains(&self, item: &Item) -> bool {
+        self.first_half.contains(item) || self.second_half.contains(item)
+    }
+
+    pub fn items(&self) -> impl Iterator<Item = &Item> {
+        self.first_half.iter().chain(self.second_half.iter())
+    }
 }
 
 impl FromStr for Rucksack {
@@ -79,10 +87,22 @@ pub fn part1(input: &str) -> u64 {
         .sum()
 }
 
+pub fn part2(input: &str) -> u64 {
+    let sacks: Vec<Rucksack> = input
+        .lines()
+        .map(|l| l.parse().expect("input in correct format"))
+        .collect();
+
+    sacks
+        .chunks_exact(3)
+        .map(|c| c[0].items().find(|i| c[1].contains(i) && c[2].contains(i)))
+        .map(|i| u64::from(i.expect("each group has item in common").0))
+        .sum()
+}
+
 pub fn main() {
     let input = std::fs::read_to_string("input/2022/day3.txt").unwrap();
-    let score = part1(&input);
-    println!("{score}");
+    dbg!(part2(&input));
 }
 
 #[cfg(test)]
@@ -134,15 +154,22 @@ mod tests {
         sack.misplaced_item().unwrap()
     }
 
-    #[test]
-    pub fn part1_example() {
-        const EXAMPLE: &'static str = r"vJrwpWtwJgWrhcsFMMfFFhFp
+    const EXAMPLE_SACKS: &'static str = r"vJrwpWtwJgWrhcsFMMfFFhFp
 jqHRNqRjqzjGDLGLrsFMfFZSrLrFZsSL
 PmmdzqPrVvPwwTWBwg
 wMqvLMZHhHMvwLHjbvcjnnSBnvTQFn
 ttgJtRGJQctTZtZT
 CrZsJsPPZsGzwwsLwLmpwMDw";
-        let result = part1(EXAMPLE);
+
+    #[test]
+    pub fn part1_example() {
+        let result = part1(EXAMPLE_SACKS);
         assert_eq!(157, result);
+    }
+
+    #[test]
+    pub fn part2_example() {
+        let result = part2(EXAMPLE_SACKS);
+        assert_eq!(70, result);
     }
 }
