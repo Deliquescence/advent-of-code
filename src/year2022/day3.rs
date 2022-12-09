@@ -76,14 +76,10 @@ impl Item {
 }
 
 pub fn part1(input: &str) -> u64 {
-    let sacks: Vec<Rucksack> = input
+    input
         .lines()
         .map(|l| l.parse().expect("input in correct format"))
-        .collect();
-
-    sacks
-        .iter()
-        .map(|s| u64::from(s.misplaced_item().expect("always 1 misplaced").0))
+        .map(|s: Rucksack| u64::from(s.misplaced_item().expect("always 1 misplaced").0))
         .sum()
 }
 
