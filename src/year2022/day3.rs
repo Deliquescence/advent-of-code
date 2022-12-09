@@ -1,12 +1,12 @@
-use std::str::FromStr;
+use std::{collections::HashSet, str::FromStr};
 
-#[derive(Debug, Clone, Copy, Eq, PartialEq, PartialOrd, Ord)]
+#[derive(Debug, Clone, Copy, Eq, PartialEq, PartialOrd, Ord, Hash)]
 #[repr(transparent)]
 pub struct Item(u8);
 
 pub struct Rucksack {
-    first_half: Vec<Item>,
-    second_half: Vec<Item>,
+    first_half: HashSet<Item>,
+    second_half: HashSet<Item>,
 }
 
 impl Rucksack {
@@ -33,23 +33,14 @@ impl FromStr for Rucksack {
         let bytes = s.as_bytes();
         let size = bytes.len() / 2;
 
-        // let mut first_half = Vec::with_capacity(size);
-        // let mut second_half = Vec::with_capacity(size);
-
-        // first_half.extend(bytes[..size].iter().map(|b| Item::from_ascii(*b)));
-        // second_half.extend(bytes[size..].iter().map(|b| Item::from_ascii(*b)));
-
-        let first_half = parse_items(&bytes[..size]);
-        let second_half = parse_items(&bytes[size..]);
-
         Ok(Self {
-            first_half,
-            second_half,
+            first_half: parse_items(&bytes[..size]),
+            second_half: parse_items(&bytes[size..]),
         })
     }
 }
 
-fn parse_items<'a>(bytes: impl IntoIterator<Item = &'a u8>) -> Vec<Item> {
+fn parse_items<'a>(bytes: impl IntoIterator<Item = &'a u8>) -> HashSet<Item> {
     bytes.into_iter().map(|b| Item::from_ascii(*b)).collect()
 }
 
@@ -116,17 +107,29 @@ mod tests {
         assert_eq!(52, "Z".parse::<Item>().unwrap().0);
     }
 
+    macro_rules! assert_sack_contains {
+        ($expected: literal, $half: expr) => {
+            assert!($half.contains(&Item::from_ascii($expected[0])));
+        };
+    }
+
     #[test]
     pub fn rucksack_parse() {
         let sack: Rucksack = "vJrwpWtwJgWrhcsFMMfFFhFp".parse().unwrap();
-        const EXPECTED_FIRST_HALF: &'static str = "vJrwpWtwJgWr";
-        const EXPECTED_SECOND_HALF: &'static str = "hcsFMMfFFhFp";
+        // "vJrwpWtwJgWr";
+        // "hcsFMMfFFhFp";
 
-        assert_eq!(EXPECTED_FIRST_HALF.len(), sack.first_half.len());
-        assert_eq!(EXPECTED_SECOND_HALF.len(), sack.second_half.len());
+        assert_sack_contains!(b"v", sack.first_half);
+        assert_sack_contains!(b"J", sack.first_half);
+        assert_sack_contains!(b"r", sack.first_half);
+        assert_sack_contains!(b"w", sack.first_half);
+        assert_sack_contains!(b"p", sack.first_half);
+        assert_sack_contains!(b"W", sack.first_half);
 
-        assert_eq!(22, sack.first_half[0].0);
-        assert_eq!(8, sack.second_half[0].0);
+        assert_sack_contains!(b"h", sack.second_half);
+        assert_sack_contains!(b"c", sack.second_half);
+        assert_sack_contains!(b"s", sack.second_half);
+        assert_sack_contains!(b"p", sack.second_half);
     }
 
     macro_rules! assert_misplaced_item {
