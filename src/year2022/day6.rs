@@ -1,5 +1,20 @@
+use hashbag::HashBag;
+
 pub fn part1(input: &str) -> usize {
-    todo!();
+    let data = input.trim().as_bytes();
+    let mut window = HashBag::with_capacity(4);
+    for i in 0..4 {
+        window.insert(data[i]);
+    }
+    for i in 4..data.len() {
+        if window.set_len() == 4 {
+            return i;
+        }
+        window.remove(&data[i - 4]);
+        window.insert(data[i]);
+    }
+
+    panic!("nothing found");
 }
 
 pub fn part2(input: &str) -> usize {
@@ -31,8 +46,8 @@ mod tests {
         assert_eq!(11, part1(EXAMPLE5));
     }
 
-    #[test]
-    pub fn part2_example() {
-		todo!();
-    }
+    // #[test]
+    // pub fn part2_example() {
+    //     todo!();
+    // }
 }
