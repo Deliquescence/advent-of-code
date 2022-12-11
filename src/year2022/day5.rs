@@ -3,6 +3,7 @@ type Item = u8;
 #[derive(PartialEq, Eq, Debug)]
 pub struct Instruction {
     count: usize,
+    // 1-indexed
     from: usize,
     to: usize,
 }
@@ -68,23 +69,36 @@ pub fn parse_instructions(input: &str) -> Vec<Instruction> {
         .collect()
 }
 
-fn apply_instruction(crates: &mut Vec<Vec<Item>>, instruction: &Instruction) {
-    for _ in 0..instruction.count {
-        let item = crates[instruction.from - 1].pop().expect("stack non empty");
-        crates[instruction.to - 1].push(item);
-    }
-}
-
 pub fn part1(input: &str) -> String {
     let mut crates = parse_crates(input);
     let instructions = parse_instructions(input);
 
     for instruction in instructions.iter() {
-        apply_instruction(&mut crates, instruction);
+        for _ in 0..instruction.count {
+            let item = crates[instruction.from - 1].pop().expect("stack non empty");
+            crates[instruction.to - 1].push(item);
+        }
     }
 
+    top_of_crates(&crates)
+}
+
+pub fn part2(input: &str) -> String {
+    let mut crates = parse_crates(input);
+    let instructions = parse_instructions(input);
+
+    for instruction in instructions.iter() {
+        let from = &mut crates[instruction.from - 1];
+        let items: Vec<_> = from.drain(from.len() - instruction.count..).collect();
+        crates[instruction.to - 1].extend(items);
+    }
+
+    top_of_crates(&crates)
+}
+
+fn top_of_crates<'a>(crates: impl IntoIterator<Item = &'a Vec<Item>>) -> String {
     crates
-        .iter()
+        .into_iter()
         .map(|c| c.last().expect("stack non empty"))
         .map(|b| char::from(*b))
         .collect()
@@ -93,7 +107,7 @@ pub fn part1(input: &str) -> String {
 pub fn main() {
     let input = std::fs::read_to_string("input/2022/day5.txt").unwrap();
     dbg!(part1(&input));
-    // dbg!(part2(&input));
+    dbg!(part2(&input));
 }
 
 #[cfg(test)]
@@ -137,8 +151,8 @@ move 1 from 1 to 2";
         assert_eq!("CMZ", part1(EXAMPLE));
     }
 
-    // #[test]
-    // pub fn part2_example() {
-    // 	todo!();
-    // }
+    #[test]
+    pub fn part2_example() {
+        assert_eq!("MCD", part2(EXAMPLE));
+    }
 }
