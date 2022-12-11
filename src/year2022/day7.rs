@@ -1,13 +1,18 @@
+use std::collections::VecDeque;
+
+#[derive(Debug)]
 pub enum Tree {
     File(File),
     Directory(Directory),
 }
 
+#[derive(Debug)]
 pub struct File {
     name: String,
     size: usize,
 }
 
+#[derive(Debug)]
 pub struct Directory {
     name: String,
     children: Vec<Tree>,
@@ -29,18 +34,120 @@ impl Tree {
     }
 }
 
-impl Directory {
-    pub fn size(&self) -> usize {
-        self.children.iter().map(|c| c.size()).sum()
+impl File {
+    pub fn new(name: impl Into<String>, size: usize) -> Self {
+        Self {
+            name: name.into(),
+            size,
+        }
     }
 }
 
-pub fn parse_tree(input: &str) -> Tree {
-    todo!();
+impl Directory {
+    pub fn new(name: impl Into<String>) -> Self {
+        Self {
+            name: name.into(),
+            children: Default::default(),
+        }
+    }
+
+    pub fn size(&self) -> usize {
+        self.children.iter().map(|c| c.size()).sum()
+    }
+
+    pub fn descendants_and_self<'a>(&'a self) -> impl Iterator<Item = &'a Self> + 'a {
+        std::iter::once(self).chain(self.descendant_directories())
+    }
+
+    pub fn descendant_directories<'a>(&'a self) -> Box<dyn Iterator<Item = &'a Self> + 'a> {
+        Box::new(
+            self.children
+                .iter()
+                .filter_map(|c| {
+                    if let Tree::Directory(d) = c {
+                        Some(d.descendant_directories())
+                    } else {
+                        None
+                    }
+                })
+                .flatten(),
+        )
+    }
+}
+
+pub fn parse_tree(input: &str) -> Directory {
+    let mut unparsed_lines: VecDeque<_> = input.lines().skip_while(|l| l.is_empty()).collect();
+    // let mut remaining = &unparsed_lines[..];
+    let root = parse_cd(&mut unparsed_lines);
+    // root.children = parse_next_ls(&remaining);
+    // remaining = &remaining[root.children.len()..];
+
+    root
+}
+
+pub fn parse_cd(unparsed_lines: &mut VecDeque<&str>) -> Directory {
+    dbg!("entering parse_cd", &unparsed_lines);
+    const PROMPT: &'static str = "$ cd ";
+    let parent_line = unparsed_lines.pop_front().expect("more to do");
+    assert!(parent_line.starts_with(PROMPT));
+    let name = parent_line[PROMPT.len()..].to_string();
+    let mut dir = Directory::new(name);
+    dir.children = parse_ls(unparsed_lines);
+
+	while let Some(child_line)= unparsed_lines.front(){
+        dbg!(&dir);
+        dbg!("start of loop", &unparsed_lines);
+        assert!(child_line.starts_with(PROMPT));
+        let child_name = child_line[PROMPT.len()..].to_string();
+        if child_name == ".." {
+            break;
+        }
+        let child = dir
+            .children
+            .iter_mut()
+            .find(|c| match c {
+                Tree::Directory(d) if d.name == child_name => true,
+                _ => false,
+            })
+            .expect("cd into dir from ls");
+        let child_dir = parse_cd(unparsed_lines);
+		dbg!(&child_dir);
+        // for _ in 0..child_dir.children.len() {
+            unparsed_lines.pop_front();
+        // }
+        *child = Tree::Directory(child_dir);
+    }
+
+    dir
+}
+
+pub fn parse_ls(unparsed_lines: &mut VecDeque<&str>) -> Vec<Tree> {
+    assert_eq!("$ ls", unparsed_lines[0]);
+    let items: Vec<_> = unparsed_lines
+        .iter()
+        .skip(1)
+        .take_while(|l| !l.starts_with("$"))
+        .map(|l| {
+            let (dir_or_size, name) = l.split_once(' ').expect("format of ls");
+            match dir_or_size.parse() {
+                Ok(size) => Tree::File(File::new(name, size)),
+                Err(_) => Tree::Directory(Directory::new(name)),
+            }
+        })
+        .collect();
+    for _ in 0..=items.len() {
+        unparsed_lines.pop_front();
+    }
+    items
 }
 
 pub fn part1(input: &str) -> usize {
-    todo!();
+    let tree = parse_tree(input);
+
+    tree.descendants_and_self()
+        .map(|d| d.size())
+        .filter(|&s| s <= 100000)
+        .sum()
 }
 
 pub fn part2(input: &str) -> usize {
@@ -84,22 +191,18 @@ $ ls
 
     #[test]
     pub fn parse_tree_example() {
-        let tree = parse_tree(EXAMPLE);
+        let root = parse_tree(EXAMPLE);
 
-        let root = match tree {
-            Tree::Directory(d) => d,
-            _ => panic!("root should be directory"),
-        };
         assert_eq!("/", root.name);
         assert_eq!(48381165, root.size());
-        assert_children(&root, vec!["a", "b.txt", "c.dat", "d"]);
+        assert_children_names(&root, vec!["a", "b.txt", "c.dat", "d"]);
         assert_children_sizes(&root, vec![94853, 14848514, 8504156, 24933642]);
 
         match &root.children[0] {
             Tree::File(_) => panic!("expected 'a' to be directory"),
             Tree::Directory(dir_a) => {
                 assert_eq!("a", dir_a.name);
-                assert_children(&dir_a, vec!["e", "f", "g", "h.lst"]);
+                assert_children_names(&dir_a, vec!["e", "f", "g", "h.lst"]);
                 assert_children_sizes(&dir_a, vec![584, 29116, 2557, 62596]);
 
                 match &dir_a.children[0] {
@@ -107,13 +210,25 @@ $ ls
                     Tree::Directory(dir_e) => {
                         assert_eq!("e", dir_e.name);
                         assert_eq!(584, dir_e.size());
+
+                        assert_children_names(&dir_e, vec!["i"]);
+                        assert_children_sizes(&dir_e, vec![584]);
                     }
                 }
             }
         }
+
+        match &root.children[3] {
+            Tree::File(_) => panic!("expected 'd' to be directory"),
+            Tree::Directory(dir_d) => {
+                assert_eq!("d", dir_d.name);
+                assert_children_names(&dir_d, vec!["j", "d.log", "d.ext", "k"]);
+                assert_children_sizes(&dir_d, vec![4060174, 8033020, 5626152, 7214296]);
+            }
+        }
     }
 
-    fn assert_children(directory: &Directory, expected: Vec<&'static str>) {
+    fn assert_children_names(directory: &Directory, expected: Vec<&'static str>) {
         assert_eq!(
             expected,
             directory
