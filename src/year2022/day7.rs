@@ -141,13 +141,24 @@ pub fn part1(input: &str) -> usize {
 
 #[allow(dead_code, unused_variables)]
 pub fn part2(input: &str) -> usize {
-    todo!();
+    const TOTAL_SPACE: usize = 70000000;
+    const FREE_SPACE_REQUIRED: usize = 30000000;
+    let tree = parse_tree(input);
+    let total_used = tree.size();
+    let total_unused = TOTAL_SPACE - total_used;
+    let need_to_free = FREE_SPACE_REQUIRED - total_unused;
+
+    tree.descendants_and_self()
+        .map(|d| d.size())
+        .filter(|&s| s >= need_to_free)
+        .min()
+        .unwrap()
 }
 
 pub fn main() {
     let input = std::fs::read_to_string("input/2022/day7.txt").unwrap();
     dbg!(part1(&input));
-    // dbg!(part2(&input));
+    dbg!(part2(&input));
 }
 
 #[cfg(test)]
@@ -267,8 +278,8 @@ $ ls
         );
     }
 
-    // #[test]
-    // pub fn part2_example() {
-    // 	todo!();
-    // }
+    #[test]
+    pub fn part2_example() {
+        assert_eq!(24933642, part2(EXAMPLE));
+    }
 }
