@@ -139,6 +139,7 @@ pub fn part1(input: &str) -> usize {
         .sum()
 }
 
+#[allow(dead_code, unused_variables)]
 pub fn part2(input: &str) -> usize {
     todo!();
 }
