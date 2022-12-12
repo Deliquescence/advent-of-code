@@ -1,18 +1,18 @@
 use std::collections::VecDeque;
 
-#[derive(Debug)]
+#[derive(Debug, Clone, PartialEq)]
 pub enum Tree {
     File(File),
     Directory(Directory),
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone, PartialEq)]
 pub struct File {
     name: String,
     size: usize,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone, PartialEq)]
 pub struct Directory {
     name: String,
     children: Vec<Tree>,
@@ -65,7 +65,7 @@ impl Directory {
                 .iter()
                 .filter_map(|c| {
                     if let Tree::Directory(d) = c {
-                        Some(d.descendant_directories())
+                        Some(d.descendants_and_self())
                     } else {
                         None
                     }
@@ -77,16 +77,10 @@ impl Directory {
 
 pub fn parse_tree(input: &str) -> Directory {
     let mut unparsed_lines: VecDeque<_> = input.lines().skip_while(|l| l.is_empty()).collect();
-    // let mut remaining = &unparsed_lines[..];
-    let root = parse_cd(&mut unparsed_lines);
-    // root.children = parse_next_ls(&remaining);
-    // remaining = &remaining[root.children.len()..];
-
-    root
+    parse_cd(&mut unparsed_lines)
 }
 
 pub fn parse_cd(unparsed_lines: &mut VecDeque<&str>) -> Directory {
-    dbg!("entering parse_cd", &unparsed_lines);
     const PROMPT: &'static str = "$ cd ";
     let parent_line = unparsed_lines.pop_front().expect("more to do");
     assert!(parent_line.starts_with(PROMPT));
@@ -94,9 +88,7 @@ pub fn parse_cd(unparsed_lines: &mut VecDeque<&str>) -> Directory {
     let mut dir = Directory::new(name);
     dir.children = parse_ls(unparsed_lines);
 
-	while let Some(child_line)= unparsed_lines.front(){
-        dbg!(&dir);
-        dbg!("start of loop", &unparsed_lines);
+    while let Some(child_line) = unparsed_lines.front() {
         assert!(child_line.starts_with(PROMPT));
         let child_name = child_line[PROMPT.len()..].to_string();
         if child_name == ".." {
@@ -111,10 +103,7 @@ pub fn parse_cd(unparsed_lines: &mut VecDeque<&str>) -> Directory {
             })
             .expect("cd into dir from ls");
         let child_dir = parse_cd(unparsed_lines);
-		dbg!(&child_dir);
-        // for _ in 0..child_dir.children.len() {
-            unparsed_lines.pop_front();
-        // }
+        unparsed_lines.pop_front();
         *child = Tree::Directory(child_dir);
     }
 
@@ -253,6 +242,28 @@ $ ls
     #[test]
     pub fn part1_example() {
         assert_eq!(95437, part1(EXAMPLE));
+    }
+
+    #[test]
+    pub fn test_descendants() {
+        let mut dir = Directory::new("/");
+        assert_eq!(vec![&dir], dir.descendants_and_self().collect::<Vec<_>>());
+        assert_eq!(
+            Vec::<&Directory>::new(),
+            dir.descendant_directories().collect::<Vec<_>>()
+        );
+
+        let mut a = Directory::new("a");
+        let b = Directory::new("b");
+        a.children.push(Tree::Directory(b.clone()));
+        assert_eq!(vec![&b], a.descendant_directories().collect::<Vec<_>>());
+        assert_eq!(vec![&a, &b], a.descendants_and_self().collect::<Vec<_>>());
+
+        dir.children.push(Tree::Directory(a.clone()));
+        assert_eq!(
+            vec![&dir, &a, &b],
+            dir.descendants_and_self().collect::<Vec<_>>()
+        );
     }
 
     // #[test]
