@@ -69,7 +69,7 @@ fn mark_grid_visibility(grid: &mut Grid) {
 pub fn parse_grid(input: &str) -> Grid {
     let mut grid = parse_unmarked_grid(input);
     mark_grid_visibility(&mut grid);
-    dbg!(grid)
+    grid
 }
 
 pub fn part1(input: &str) -> usize {
@@ -79,13 +79,41 @@ pub fn part1(input: &str) -> usize {
 
 #[allow(dead_code, unused_variables)]
 pub fn part2(input: &str) -> usize {
-    todo!();
+    let grid = parse_grid(input);
+    (0..grid.len())
+        .flat_map(|i| (0..grid.len()).map(move |j| (i, j)))
+        .map(|(i, j)| scenic_score(&grid, i, j))
+        .max()
+        .unwrap()
+}
+
+fn scenic_score(grid: &Grid, i: usize, j: usize) -> usize {
+    let height = grid[i][j].0;
+    let to_left = count_trees(height, grid[i][..j].iter().rev().copied());
+    let to_up = count_trees(height, grid[..i].iter().rev().map(|r| r[j]));
+    let to_right = count_trees(height, grid[i].iter().skip(j + 1).copied());
+    let to_down = count_trees(height, grid.iter().skip(i + 1).map(|r| r[j]));
+
+    to_up * to_left * to_down * to_right
+}
+
+fn count_trees(height: u8, mut trees: impl Iterator<Item = Tree>) -> usize {
+    match trees.try_fold(0, |acc, t| {
+        if t.0 < height {
+            Ok(acc + 1)
+        } else {
+            Err(acc + 1)
+        }
+    }) {
+        Ok(c) => c,
+        Err(c) => c,
+    }
 }
 
 pub fn main() {
     let input = std::fs::read_to_string("input/2022/day8.txt").unwrap();
     dbg!(part1(&input));
-    // dbg!(part2(&input));
+    dbg!(part2(&input));
 }
 
 #[cfg(test)]
@@ -103,6 +131,7 @@ mod tests {
     pub fn part1_example() {
         assert_eq!(21, part1(EXAMPLE));
     }
+
     #[test]
     pub fn my_part1() {
         assert_eq!(
@@ -111,8 +140,15 @@ mod tests {
         );
     }
 
-    // #[test]
-    // pub fn part2_example() {
-    // 	todo!();
-    // }
+    #[test]
+    pub fn test_scenic_score() {
+        let grid = parse_grid(EXAMPLE);
+        assert_eq!(4, scenic_score(&grid, 1, 2));
+        assert_eq!(8, scenic_score(&grid, 3, 2));
+    }
+
+    #[test]
+    pub fn part2_example() {
+        assert_eq!(8, part2(EXAMPLE));
+    }
 }
