@@ -151,4 +151,12 @@ mod tests {
     pub fn part2_example() {
         assert_eq!(8, part2(EXAMPLE));
     }
+
+    #[test]
+    pub fn my_part2() {
+        assert_eq!(
+            268800,
+            part2(&std::fs::read_to_string("input/2022/day8.txt").unwrap())
+        );
+    }
 }
