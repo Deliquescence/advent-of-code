@@ -23,37 +23,22 @@ fn mark_grid_visibility(grid: &mut Grid) {
     let height = grid.len();
     let width = grid[0].len();
 
-    // visible from left
     for i in 0..height {
         assert_eq!(width, grid[i].len());
         for j in 0..width {
+            // visible from left
             if grid[i][..j].iter().all(|t| t.0 < grid[i][j].0) {
                 grid[i][j].1 = true;
             }
-        }
-    }
-
-    // visible from top
-    for j in 0..width {
-        for i in 0..height {
+            // visible from top
             if grid[..i].iter().map(|r| r[j]).all(|t| t.0 < grid[i][j].0) {
                 grid[i][j].1 = true;
             }
-        }
-    }
-
-    // visible from right
-    for i in 0..height {
-        for j in (0..width).rev() {
+            // visible from right
             if grid[i][j..].iter().skip(1).all(|t| t.0 < grid[i][j].0) {
                 grid[i][j].1 = true;
             }
-        }
-    }
-
-    // visible from bottom
-    for j in 0..width {
-        for i in (0..height).rev() {
+            // visible from bottom
             if grid[i..]
                 .iter()
                 .skip(1)
