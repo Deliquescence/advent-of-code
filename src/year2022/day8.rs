@@ -64,7 +64,7 @@ pub fn part1(input: &str) -> usize {
 
 #[allow(dead_code, unused_variables)]
 pub fn part2(input: &str) -> usize {
-    let grid = parse_grid(input);
+    let grid = parse_unmarked_grid(input);
     (0..grid.len())
         .flat_map(|i| (0..grid.len()).map(move |j| (i, j)))
         .map(|(i, j)| scenic_score(&grid, i, j))
