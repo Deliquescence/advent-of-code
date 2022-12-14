@@ -87,14 +87,36 @@ pub fn part1(input: &str) -> isize {
 }
 
 #[allow(dead_code, unused_variables)]
-pub fn part2(input: &str) -> usize {
-    todo!();
+pub fn part2(input: &str) -> String {
+    const WIDTH: usize = 40;
+    const HEIGHT: usize = 6;
+    let instructions = parse_instructions(input);
+    let mut cpu = Cpu::new(instructions);
+    let mut output = String::with_capacity((WIDTH * HEIGHT) + HEIGHT); // newlines
+    for _ in 0..WIDTH * HEIGHT {
+        let during_cycle = cpu.cycles_completed + 1;
+        let writing_horizontal_pixel: usize = cpu.cycles_completed % 40;
+        let sprite_left = cpu.x - 1;
+        let sprite_right = cpu.x + 1;
+        // dbg!(sprite_left, sprite_right, writing_horizontal_pixel);
+        if (sprite_left..=sprite_right).contains(&(writing_horizontal_pixel as isize)) {
+            output.push('#');
+        } else {
+            output.push('.');
+        }
+        if writing_horizontal_pixel % WIDTH == WIDTH - 1 {
+            output.push('\n');
+        }
+        cpu.cycle();
+    }
+    output.pop();
+    output
 }
 
 pub fn main() {
     let input = std::fs::read_to_string("input/2022/day10.txt").unwrap();
     dbg!(part1(&input));
-    // dbg!(part2(&input));
+    println!("{}", part2(&input));
 }
 
 #[cfg(test)]
@@ -146,8 +168,24 @@ addx -5";
         assert_eq!(13140, part1(&input));
     }
 
-    // #[test]
-    // pub fn part2_example() {
-    // 	todo!();
-    // }
+    const PART2_EXPECTED: &'static str = r"##..##..##..##..##..##..##..##..##..##..
+###...###...###...###...###...###...###.
+####....####....####....####....####....
+#####.....#####.....#####.....#####.....
+######......######......######......####
+#######.......#######.......#######.....";
+
+    #[test]
+    pub fn part2_example() {
+        let input = std::fs::read_to_string("input/2022/day10_example1.txt").unwrap();
+
+        for (i, (e, a)) in PART2_EXPECTED
+            .lines()
+            .zip(part2(&input).lines())
+            .enumerate()
+        {
+            assert_eq!(e, a, "line {i}");
+        }
+        assert_eq!(PART2_EXPECTED, part2(&input));
+    }
 }
