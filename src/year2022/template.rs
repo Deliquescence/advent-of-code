@@ -27,6 +27,6 @@ mod tests {
 
     // #[test]
     // pub fn part2_example() {
-	// 	todo!();
+	// 	assert_eq!(0, part2(EXAMPLE));
     // }
 }
