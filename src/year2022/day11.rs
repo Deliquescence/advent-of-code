@@ -4,22 +4,23 @@ use itertools::Itertools;
 use once_cell::sync::Lazy;
 use regex::Regex;
 
-type Operand = Option<u32>; // None == old
+type Item = u64;
+type Operand = Option<Item>; // None == old
 
 #[derive(Debug)]
 struct Monkey {
-    items: VecDeque<u32>,
+    items: VecDeque<Item>,
     operator: Operator,
     operand_left: Operand,
     operand_right: Operand,
-    test_divisor: u32,
+    test_divisor: Item,
     true_monkey: usize,
     false_monkey: usize,
     num_inspects: usize,
 }
 
 impl Monkey {
-    pub fn do_operation(&self, old: u32) -> u32 {
+    pub fn do_operation(&self, old: Item) -> Item {
         let left = self.operand_left.unwrap_or(old);
         let right = self.operand_right.unwrap_or(old);
 
@@ -86,11 +87,20 @@ fn parse_monkeys(input: &str) -> Vec<Monkey> {
         .collect()
 }
 
-fn monkey_around(monkeys: &mut [Monkey]) {
+enum Part {
+    One,
+    Two,
+}
+
+fn monkey_around(monkeys: &mut [Monkey], part: Part) {
+    let common_multiple = monkeys.iter().map(|m| m.test_divisor).fold(1, |a, x| a * x);
     for i in 0..monkeys.len() {
         for item in std::mem::take(&mut monkeys[i].items) {
             monkeys[i].num_inspects += 1;
-            let worry = monkeys[i].do_operation(item) / 3;
+            let worry = match part {
+                Part::One => monkeys[i].do_operation(item) / 3,
+                Part::Two => monkeys[i].do_operation(item) % common_multiple,
+            };
             let dest = if worry % monkeys[i].test_divisor == 0 {
                 monkeys[i].true_monkey
             } else {
@@ -99,13 +109,11 @@ fn monkey_around(monkeys: &mut [Monkey]) {
             monkeys[dest].items.push_back(worry);
         }
     }
+    // let inspects = monkeys.iter().map(|m| m.num_inspects).collect_vec();
+    // dbg!(&inspects, inspects.iter().sum::<usize>());
 }
 
-pub fn part1(input: &str) -> usize {
-    let mut monkeys = parse_monkeys(input);
-    for _ in 0..20 {
-        monkey_around(&mut monkeys);
-    }
+fn monkey_business(monkeys: &[Monkey]) -> usize {
     monkeys
         .iter()
         .map(|m| std::cmp::Reverse(m.num_inspects))
@@ -113,15 +121,27 @@ pub fn part1(input: &str) -> usize {
         .fold(1, |a, x| a * x.0)
 }
 
+pub fn part1(input: &str) -> usize {
+    let mut monkeys = parse_monkeys(input);
+    for _ in 0..20 {
+        monkey_around(&mut monkeys, Part::One);
+    }
+    monkey_business(&monkeys)
+}
+
 #[allow(dead_code, unused_variables)]
 pub fn part2(input: &str) -> usize {
-    todo!();
+    let mut monkeys = parse_monkeys(input);
+    for _ in 0..10000 {
+        monkey_around(&mut monkeys, Part::Two);
+    }
+    monkey_business(&monkeys)
 }
 
 pub fn main() {
     let input = std::fs::read_to_string("input/2022/day11.txt").unwrap();
     dbg!(part1(&input));
-    // dbg!(part2(&input));
+    dbg!(part2(&input));
 }
 
 #[cfg(test)]
@@ -161,8 +181,8 @@ Monkey 3:
         assert_eq!(10605, part1(EXAMPLE));
     }
 
-    // #[test]
-    // pub fn part2_example() {
-    // 	todo!();
-    // }
+    #[test]
+    pub fn part2_example() {
+        assert_eq!(2713310158, part2(EXAMPLE));
+    }
 }
