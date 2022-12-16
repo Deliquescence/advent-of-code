@@ -34,6 +34,7 @@ impl Graph {
     }
 }
 
+#[allow(dead_code)]
 fn dijkstra_path(previous: &[Option<usize>], from: usize) -> Vec<usize> {
     let mut path = Vec::new();
     path.push(from);
@@ -108,15 +109,16 @@ fn accessible(src: u8, dest: u8) -> bool {
     dest <= src + 1
 }
 
-fn part1(graph: &Graph, previous: &[Option<usize>]) -> usize {
+fn part1(graph: &Graph, distance: &[u32], _previous: &[Option<usize>]) -> u32 {
     // dbg!(&graph);
-    let path = dijkstra_path(previous, graph.start);
+    // let path = dijkstra_path(previous, graph.start);
     // dbg!(&path);
-    path.len() - 1
+    // path.len() - 1
+    distance[graph.start]
 }
 
 #[allow(dead_code, unused_variables)]
-fn part2(graph: &Graph, distance: &[u32], previous: &[Option<usize>]) -> usize {
+fn part2(graph: &Graph, distance: &[u32], previous: &[Option<usize>]) -> u32 {
     let closest = graph
         .vertices
         .iter()
@@ -124,9 +126,10 @@ fn part2(graph: &Graph, distance: &[u32], previous: &[Option<usize>]) -> usize {
         .filter_map(|(i, &h)| if h == b'a' { Some(i) } else { None })
         .min_by_key(|&i| distance[i])
         .unwrap();
-    let path = dijkstra_path(&previous, closest);
+    // let path = dijkstra_path(&previous, closest);
     // dbg!(&path);
-    path.len() - 1
+    // path.len() - 1
+    distance[closest]
 }
 
 pub fn main() {
@@ -134,7 +137,7 @@ pub fn main() {
     let input = std::fs::read_to_string("input/2022/day12.txt").unwrap();
     let graph = parse_grid(&input);
     let (distance, previous) = graph.dijkstra();
-    dbg!(part1(&graph, &previous));
+    dbg!(part1(&graph, &distance, &previous));
     dbg!(part2(&graph, &distance, &previous));
     println!(
         "Time: {}us",
@@ -155,8 +158,8 @@ abdefghi";
     #[test]
     pub fn part1_example() {
         let graph = parse_grid(&EXAMPLE);
-        let (_distance, previous) = graph.dijkstra();
-        assert_eq!(31, part1(&graph, &previous));
+        let (distance, previous) = graph.dijkstra();
+        assert_eq!(31, part1(&graph, &distance, &previous));
     }
 
     #[test]
