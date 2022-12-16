@@ -1,4 +1,5 @@
-use itertools::Itertools;
+use priority_queue::PriorityQueue;
+use std::cmp::Reverse;
 use tinyvec::ArrayVec;
 
 #[derive(Debug)]
@@ -11,21 +12,19 @@ struct Graph {
 
 impl Graph {
     fn dijkstra(&self) -> (Vec<u32>, Vec<Option<usize>>) {
-        let mut unvisited = (0..self.vertices.len()).collect_vec();
         let mut distance: Vec<u32> = vec![u32::MAX; self.vertices.len()];
         let mut previous: Vec<Option<usize>> = vec![None; self.vertices.len()];
         distance[self.peak] = 0;
+        let mut unvisited = PriorityQueue::with_capacity(self.vertices.len());
+        for i in 0..self.vertices.len() {
+            unvisited.push(i, Reverse(distance[i]));
+        }
 
-        while let Some((i, &u)) = unvisited
-            .iter()
-            .enumerate()
-            .min_by_key(|(_i, v)| distance[**v])
-        {
-            unvisited.remove(i);
-
-            for &n in self.incoming[u].iter().filter(|a| unvisited.contains(a)) {
-                if distance[u].saturating_add(1) < distance[n] {
-                    distance[n] = distance[u] + 1;
+        while let Some((u, dist)) = unvisited.pop() {
+            for &n in self.incoming[u].iter() {
+                if unvisited.get(&n).is_some() && dist.0.saturating_add(1) < distance[n] {
+                    distance[n] = dist.0 + 1;
+                    unvisited.change_priority(&n, Reverse(dist.0 + 1));
                     previous[n] = Some(u);
                 }
             }
