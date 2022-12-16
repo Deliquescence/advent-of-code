@@ -131,11 +131,16 @@ fn part2(graph: &Graph, distance: &[u32], previous: &[Option<usize>]) -> usize {
 }
 
 pub fn main() {
+    let start = std::time::Instant::now();
     let input = std::fs::read_to_string("input/2022/day12.txt").unwrap();
     let graph = parse_grid(&input);
     let (distance, previous) = graph.dijkstra();
     dbg!(part1(&graph, &previous));
     dbg!(part2(&graph, &distance, &previous));
+    println!(
+        "Time: {}us",
+        std::time::Instant::now().duration_since(start).as_micros()
+    );
 }
 
 #[cfg(test)]
