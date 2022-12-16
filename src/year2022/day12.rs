@@ -5,7 +5,6 @@ use tinyvec::ArrayVec;
 struct Graph {
     vertices: Vec<u8>,
     incoming: Vec<ArrayVec<[usize; 4]>>,
-    outgoing: Vec<ArrayVec<[usize; 4]>>,
     start: usize,
     peak: usize,
 }
@@ -58,7 +57,6 @@ fn parse_grid(input: &str) -> Graph {
     let mut peak = 0;
     let mut vertices = vec![0; width * height];
     let mut incoming: Vec<ArrayVec<[usize; 4]>> = vec![Default::default(); width * height];
-    let mut outgoing: Vec<ArrayVec<[usize; 4]>> = vec![Default::default(); width * height];
     for i in 0..height {
         for j in 0..width {
             let v = idx(i, j);
@@ -81,7 +79,6 @@ fn parse_grid(input: &str) -> Graph {
             let mut maybe_push = |ii, jj| {
                 let u = idx(ii, jj);
                 if accessible(vertices[v], vertices[u]) {
-                    outgoing[v].push(u);
                     incoming[u].push(v);
                 }
             };
@@ -103,7 +100,6 @@ fn parse_grid(input: &str) -> Graph {
     Graph {
         vertices,
         incoming,
-        outgoing,
         start,
         peak,
     }
@@ -113,18 +109,15 @@ fn accessible(src: u8, dest: u8) -> bool {
     dest <= src + 1
 }
 
-pub fn part1(input: &str) -> usize {
-    let graph = parse_grid(input);
+fn part1(graph: &Graph, previous: &[Option<usize>]) -> usize {
     // dbg!(&graph);
-    let path = dijkstra_path(&graph.dijkstra().1, graph.start);
+    let path = dijkstra_path(previous, graph.start);
     // dbg!(&path);
     path.len() - 1
 }
 
 #[allow(dead_code, unused_variables)]
-pub fn part2(input: &str) -> usize {
-    let graph = parse_grid(input);
-    let (distance, previous) = graph.dijkstra();
+fn part2(graph: &Graph, distance: &[u32], previous: &[Option<usize>]) -> usize {
     let closest = graph
         .vertices
         .iter()
@@ -139,8 +132,10 @@ pub fn part2(input: &str) -> usize {
 
 pub fn main() {
     let input = std::fs::read_to_string("input/2022/day12.txt").unwrap();
-    dbg!(part1(&input));
-    dbg!(part2(&input));
+    let graph = parse_grid(&input);
+    let (distance, previous) = graph.dijkstra();
+    dbg!(part1(&graph, &previous));
+    dbg!(part2(&graph, &distance, &previous));
 }
 
 #[cfg(test)]
@@ -155,11 +150,15 @@ abdefghi";
 
     #[test]
     pub fn part1_example() {
-        assert_eq!(31, part1(EXAMPLE));
+        let graph = parse_grid(&EXAMPLE);
+        let (_distance, previous) = graph.dijkstra();
+        assert_eq!(31, part1(&graph, &previous));
     }
 
     #[test]
     pub fn part2_example() {
-        assert_eq!(29, part2(EXAMPLE));
+        let graph = parse_grid(&EXAMPLE);
+        let (distance, previous) = graph.dijkstra();
+        assert_eq!(29, part2(&graph, &distance, &previous));
     }
 }
