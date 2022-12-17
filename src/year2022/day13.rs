@@ -5,7 +5,7 @@ use std::{
 
 use itertools::Itertools;
 
-#[derive(Eq, PartialEq)]
+#[derive(Eq, PartialEq, Clone)]
 enum Value {
     Integer(u32),
     List(Vec<Value>),
@@ -100,19 +100,19 @@ impl Ord for Value {
     }
 }
 
-fn parse_pairs(input: &str) -> Vec<(Value, Value)> {
+fn parse_lines(input: &str) -> Vec<Value> {
     input
         .lines()
         .filter_map(|l| Value::parse(l.as_bytes()).ok())
-        .tuples()
         .collect()
 }
 
 pub fn part1(input: &str) -> usize {
-    let pairs = parse_pairs(input);
-    // dbg!(&pairs);
-    let correct = pairs
+    let lines = parse_lines(input);
+    // dbg!(&lines);
+    let correct = lines
         .iter()
+        .tuples()
         .enumerate()
         .filter_map(|(i, (left, right))| if left < right { Some(i + 1) } else { None })
         .collect_vec();
@@ -122,13 +122,26 @@ pub fn part1(input: &str) -> usize {
 
 #[allow(dead_code, unused_variables)]
 pub fn part2(input: &str) -> usize {
-    todo!();
+    let additional_packets = [
+        Value::parse(b"[[2]]").unwrap(),
+        Value::parse(b"[[6]]").unwrap(),
+    ];
+    let mut lines = parse_lines(input);
+    lines.extend(additional_packets.iter().cloned());
+    lines.sort();
+    lines.iter().enumerate().fold(1, |a, (i, v)| {
+        if additional_packets.contains(v) {
+            (i + 1) * a
+        } else {
+            a
+        }
+    })
 }
 
 pub fn main() {
     let input = std::fs::read_to_string("input/2022/day13.txt").unwrap();
     dbg!(part1(&input));
-    // dbg!(part2(&input));
+    dbg!(part2(&input));
 }
 
 #[cfg(test)]
@@ -161,15 +174,15 @@ mod tests {
 
     #[test]
     pub fn parsing() {
-        let pairs = parse_pairs(EXAMPLE);
+        let lines = parse_lines(EXAMPLE);
 
         assert_eq!(
             Value::parse(b"[1,[2,[3,[4,[5,6,7]]]],8,9]").unwrap(),
-            pairs[7].0
+            lines[14]
         );
         assert_eq!(
             Value::parse(b"[1,[2,[3,[4,[5,6,0]]]],8,9]").unwrap(),
-            pairs[7].1
+            lines[15]
         );
     }
 
@@ -178,8 +191,8 @@ mod tests {
         assert_eq!(13, part1(EXAMPLE));
     }
 
-    // #[test]
-    // pub fn part2_example() {
-    // 	assert_eq!(0, part2(EXAMPLE));
-    // }
+    #[test]
+    pub fn part2_example() {
+        assert_eq!(140, part2(EXAMPLE));
+    }
 }
