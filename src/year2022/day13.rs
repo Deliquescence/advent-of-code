@@ -35,7 +35,9 @@ impl Value {
             let mut values = Vec::new();
             let mut left = 1;
             while let Some(right) = indices.pop_front() {
-                values.push(Value::parse(&str_bytes[left..right])?);
+                if let Ok(v) = Value::parse(&str_bytes[left..i_closing]) {
+                    values.push(v);
+                }
                 left = right + 1;
             }
             Ok(Value::List(values))
