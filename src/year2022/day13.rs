@@ -71,6 +71,35 @@ impl Debug for Value {
     }
 }
 
+impl PartialOrd for Value {
+    fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
+        Some(self.cmp(other))
+    }
+}
+
+impl Ord for Value {
+    fn cmp(&self, other: &Self) -> std::cmp::Ordering {
+        match (self, other) {
+            (Value::Integer(s), Value::Integer(o)) => s.cmp(o),
+            (Value::List(s), Value::List(o)) => {
+                use itertools::EitherOrBoth::*;
+                s.iter()
+                    .zip_longest(o.iter())
+                    .map(|eob| match eob {
+                        Both(l, r) => l.cmp(r),
+                        Left(_) => std::cmp::Ordering::Greater,
+                        Right(_) => std::cmp::Ordering::Less,
+                    })
+                    .filter(|&ord| ord != std::cmp::Ordering::Equal)
+                    .next()
+                    .unwrap_or(std::cmp::Ordering::Equal)
+            }
+            (Value::Integer(s), Value::List(_)) => Value::List(vec![Value::Integer(*s)]).cmp(other),
+            (Value::List(_), Value::Integer(o)) => self.cmp(&Value::List(vec![Value::Integer(*o)])),
+        }
+    }
+}
+
 fn parse_pairs(input: &str) -> Vec<(Value, Value)> {
     input
         .lines()
@@ -80,9 +109,15 @@ fn parse_pairs(input: &str) -> Vec<(Value, Value)> {
 }
 
 pub fn part1(input: &str) -> usize {
-    let packets = parse_pairs(input);
-    dbg!(&packets);
-    todo!();
+    let pairs = parse_pairs(input);
+    // dbg!(&pairs);
+    let correct = pairs
+        .iter()
+        .enumerate()
+        .filter_map(|(i, (left, right))| if left < right { Some(i + 1) } else { None })
+        .collect_vec();
+    // dbg!(&correct);
+    correct.iter().sum()
 }
 
 #[allow(dead_code, unused_variables)]
