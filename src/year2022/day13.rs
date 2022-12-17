@@ -5,6 +5,7 @@ use std::{
 
 use itertools::Itertools;
 
+#[derive(Eq, PartialEq)]
 enum Value {
     Integer(u32),
     List(Vec<Value>),
@@ -68,12 +69,16 @@ impl Debug for Value {
     }
 }
 
-pub fn part1(input: &str) -> usize {
-    let packets: Vec<(Value, Value)> = input
+fn parse_pairs(input: &str) -> Vec<(Value, Value)> {
+    input
         .lines()
         .filter_map(|l| Value::parse(l.as_bytes()).ok())
         .tuples()
-        .collect();
+        .collect()
+}
+
+pub fn part1(input: &str) -> usize {
+    let packets = parse_pairs(input);
     dbg!(&packets);
     todo!();
 }
@@ -116,6 +121,20 @@ mod tests {
 
 [1,[2,[3,[4,[5,6,7]]]],8,9]
 [1,[2,[3,[4,[5,6,0]]]],8,9]";
+
+    #[test]
+    pub fn parsing() {
+        let pairs = parse_pairs(EXAMPLE);
+
+        assert_eq!(
+            Value::parse(b"[1,[2,[3,[4,[5,6,7]]]],8,9]").unwrap(),
+            pairs[7].0
+        );
+        assert_eq!(
+            Value::parse(b"[1,[2,[3,[4,[5,6,0]]]],8,9]").unwrap(),
+            pairs[7].1
+        );
+    }
 
     #[test]
     pub fn part1_example() {
