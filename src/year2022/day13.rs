@@ -14,36 +14,30 @@ impl Value {
     fn parse(str_bytes: &[u8]) -> Result<Self, ()> {
         if str_bytes.iter().next() == Some(&b'[') {
             let mut unclosed = 0;
-            let mut commas = VecDeque::new();
-            if let Some((i_closing, _)) = str_bytes.iter().enumerate().find(|(i, c)| {
-                if **c == b'[' {
-                    unclosed += 1;
-                    false
-                } else if **c == b']' {
-                    unclosed -= 1;
-                    unclosed == 0
-                } else if **c == b',' && unclosed == 1 {
-                    commas.push_back(*i);
-                    false
-                } else {
-                    false
-                }
-            }) {
-                let mut values = Vec::new();
-                let mut left = 1;
-                while let Some(right) = commas.pop_front() {
-                    if let Ok(v) = Value::parse(&str_bytes[left..right]) {
-                        values.push(v);
+            let mut indices = VecDeque::new();
+            let (i_closing, _) = str_bytes
+                .iter()
+                .enumerate()
+                .find(|(i, c)| {
+                    if **c == b'[' {
+                        unclosed += 1;
+                    } else if **c == b']' {
+                        unclosed -= 1;
+                    } else if **c == b',' && unclosed == 1 {
+                        indices.push_back(*i);
                     }
-                    left = right + 1;
-                }
-                if let Ok(v) = Value::parse(&str_bytes[left..i_closing]) {
-                    values.push(v);
-                }
-                Ok(Value::List(values))
-            } else {
-                panic!("{:?}", String::from_utf8(str_bytes.to_vec()));
+                    unclosed == 0
+                })
+                .ok_or(())?;
+
+            indices.push_back(i_closing);
+            let mut values = Vec::new();
+            let mut left = 1;
+            while let Some(right) = indices.pop_front() {
+                values.push(Value::parse(&str_bytes[left..right])?);
+                left = right + 1;
             }
+            Ok(Value::List(values))
         } else {
             atoi::atoi(str_bytes).ok_or(()).map(|u| Value::Integer(u))
         }
