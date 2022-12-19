@@ -32,6 +32,20 @@ impl<const WIDTH: usize, const HEIGHT: usize> FromStr for Grid<WIDTH, HEIGHT> {
     type Err = ();
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
+        fn enumerate_line(
+            from: (usize, usize),
+            to: (usize, usize),
+        ) -> Box<dyn Iterator<Item = (usize, usize)>> {
+            use std::cmp::{max, min};
+            use std::iter::repeat;
+            if from.0 == to.0 {
+                Box::new(repeat(from.0).zip(min(from.1, to.1)..=max(from.1, to.1)))
+            } else if from.1 == to.1 {
+                Box::new((min(from.0, to.0)..=max(from.0, to.0)).zip(repeat(from.1)))
+            } else {
+                Box::new(std::iter::empty())
+            }
+        }
         let mut grid = Grid::<WIDTH, HEIGHT> {
             cells: vec![false; WIDTH * HEIGHT],
         };
@@ -50,21 +64,6 @@ impl<const WIDTH: usize, const HEIGHT: usize> FromStr for Grid<WIDTH, HEIGHT> {
             grid[c] = true;
         }
         Ok(grid)
-    }
-}
-
-fn enumerate_line(
-    from: (usize, usize),
-    to: (usize, usize),
-) -> Box<dyn Iterator<Item = (usize, usize)>> {
-    use std::cmp::{max, min};
-    use std::iter::repeat;
-    if from.0 == to.0 {
-        Box::new(repeat(from.0).zip(min(from.1, to.1)..=max(from.1, to.1)))
-    } else if from.1 == to.1 {
-        Box::new((min(from.0, to.0)..=max(from.0, to.0)).zip(repeat(from.1)))
-    } else {
-        Box::new(std::iter::empty())
     }
 }
 
