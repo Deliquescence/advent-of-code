@@ -1,4 +1,5 @@
 use std::{
+    fmt::Display,
     ops::{Index, IndexMut},
     str::FromStr,
 };
@@ -23,6 +24,24 @@ impl<const WIDTH: usize, const HEIGHT: usize> Index<(usize, usize)> for Grid<WID
 impl<const WIDTH: usize, const HEIGHT: usize> IndexMut<(usize, usize)> for Grid<WIDTH, HEIGHT> {
     fn index_mut(&mut self, index: (usize, usize)) -> &mut Self::Output {
         &mut self.cells[index.1 * WIDTH + index.0]
+    }
+}
+
+impl<const WIDTH: usize, const HEIGHT: usize> Display for Grid<WIDTH, HEIGHT> {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        const INTERESTING_WIDTH: usize = 500;
+        const INTERESTING_HEIGHT: usize = 175;
+        for y in 1..INTERESTING_HEIGHT {
+            for x in (SAND_FROM.0 - INTERESTING_WIDTH + 1)..(SAND_FROM.0 + INTERESTING_WIDTH) {
+                if self[(x, y)] {
+                    write!(f, "#")?
+                } else {
+                    write!(f, ".")?
+                }
+            }
+            write!(f, "\n")?
+        }
+        Ok(())
     }
 }
 
@@ -67,8 +86,59 @@ impl<const WIDTH: usize, const HEIGHT: usize> FromStr for Grid<WIDTH, HEIGHT> {
     }
 }
 
+impl<const WIDTH: usize, const HEIGHT: usize> Grid<WIDTH, HEIGHT> {
+    pub fn place_sand(&mut self) -> bool {
+        let mut c = SAND_FROM;
+        loop {
+            if c.1 >= HEIGHT - 1 || c.0 == 0 || c.0 >= WIDTH - 1 {
+                break false;
+            }
+            if self[(c.0, c.1 + 1)] == false {
+                c.1 += 1;
+            } else if self[(c.0 - 1, c.1 + 1)] == false {
+                c.0 -= 1;
+                c.1 += 1;
+            } else if self[(c.0 + 1, c.1 + 1)] == false {
+                c.0 += 1;
+                c.1 += 1;
+            } else {
+                self[c] = true;
+                break true;
+            }
+        }
+    }
+}
+
+fn place_until_settled<const WIDTH: usize, const HEIGHT: usize>(
+    grid: &mut Grid<WIDTH, HEIGHT>,
+    visualize: bool,
+) -> usize {
+    if visualize {
+        let mut c = 0;
+        loop {
+            if grid.place_sand() {
+                c += 1;
+            } else {
+                break;
+            }
+            print!("\x1B[2J\x1B[1;1H");
+            print!("{grid}");
+            std::thread::sleep(std::time::Duration::from_millis(500));
+        }
+        c
+    } else {
+        std::iter::repeat_with(|| grid.place_sand())
+            .take_while(|b| *b)
+            .count()
+    }
+}
+
 pub fn part1(input: &str) -> usize {
-    todo!();
+    let mut grid: Grid<1000, 200> = input.parse().unwrap();
+    std::fs::write("debug1.txt", format!("{grid}")).unwrap();
+    let c = place_until_settled(&mut grid, false);
+    std::fs::write("debug2.txt", format!("{grid}")).unwrap();
+    c
 }
 
 #[allow(dead_code, unused_variables)]
@@ -99,6 +169,22 @@ mod tests {
         assert!(grid[(496, 6)]);
         assert!(grid[(503, 4)]);
         assert!(grid[(502, 4)]);
+    }
+
+    #[test]
+    pub fn placing_sand() {
+        let mut grid: Grid<1000, 200> = EXAMPLE.parse().unwrap();
+        assert!(!grid[(500, 8)]);
+        assert!(grid.place_sand());
+        assert!(grid[(500, 8)]);
+        assert!(grid.place_sand());
+        assert!(grid[(499, 8)]);
+        assert!(grid.place_sand());
+        assert!(grid[(501, 8)]);
+        assert!(grid.place_sand());
+        assert!(grid[(500, 7)]);
+        assert!(grid.place_sand());
+        assert!(grid[(498, 8)]);
     }
 
     #[test]
