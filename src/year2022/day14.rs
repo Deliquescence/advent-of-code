@@ -91,6 +91,19 @@ impl<const WIDTH: usize, const HEIGHT: usize> FromStr for Grid<WIDTH, HEIGHT> {
 }
 
 impl<const WIDTH: usize, const HEIGHT: usize> Grid<WIDTH, HEIGHT> {
+    pub fn create_floor(&mut self) {
+        let y_height = (0..WIDTH)
+            .cartesian_product(0..HEIGHT)
+            .filter_map(|c| if self[c] { Some(c.1) } else { None })
+            .max()
+            .expect("non-empty")
+            + 2;
+
+        for x in 0..WIDTH {
+            self[(x, y_height)] = true;
+        }
+    }
+
     pub fn place_sand(&mut self) -> bool {
         let mut c = SAND_FROM;
         loop {
@@ -111,49 +124,54 @@ impl<const WIDTH: usize, const HEIGHT: usize> Grid<WIDTH, HEIGHT> {
             }
         }
     }
-}
 
-fn place_until_settled<const WIDTH: usize, const HEIGHT: usize>(
-    grid: &mut Grid<WIDTH, HEIGHT>,
-    visualize: bool,
-) -> usize {
-    if visualize {
-        let mut c = 0;
-        loop {
-            if grid.place_sand() {
-                c += 1;
-            } else {
-                break;
+    pub fn place_until_settled(&mut self, visualize: bool) -> usize {
+        if visualize {
+            let mut c = 0;
+            loop {
+                if self.place_sand() {
+                    c += 1;
+                } else {
+                    break;
+                }
+                print!("\x1B[2J\x1B[1;1H");
+                print!("{self}");
+                std::thread::sleep(std::time::Duration::from_millis(500));
             }
-            print!("\x1B[2J\x1B[1;1H");
-            print!("{grid}");
-            std::thread::sleep(std::time::Duration::from_millis(500));
+            c
+        } else {
+            std::iter::repeat_with(|| self.place_sand())
+                .take_while(|b| *b)
+                .count()
+        }
+    }
+
+    pub fn place_until_full(&mut self, _visualize: bool) -> usize {
+        let mut c = 0;
+        while !self[SAND_FROM] {
+            assert!(self.place_sand());
+            c += 1;
         }
         c
-    } else {
-        std::iter::repeat_with(|| grid.place_sand())
-            .take_while(|b| *b)
-            .count()
     }
 }
 
 pub fn part1(input: &str) -> usize {
     let mut grid: Grid<1000, 200> = input.parse().unwrap();
-    std::fs::write("debug1.txt", format!("{grid}")).unwrap();
-    let c = place_until_settled(&mut grid, false);
-    std::fs::write("debug2.txt", format!("{grid}")).unwrap();
-    c
+    grid.place_until_settled(false)
 }
 
 #[allow(dead_code, unused_variables)]
 pub fn part2(input: &str) -> usize {
-    todo!();
+    let mut grid: Grid<1000, 200> = input.parse().unwrap();
+    grid.create_floor();
+    grid.place_until_full(false)
 }
 
 pub fn main() {
     let input = std::fs::read_to_string("input/2022/day14.txt").unwrap();
     dbg!(part1(&input));
-    // dbg!(part2(&input));
+    dbg!(part2(&input));
 }
 
 #[cfg(test)]
@@ -196,8 +214,8 @@ mod tests {
         assert_eq!(24, part1(EXAMPLE));
     }
 
-    // #[test]
-    // pub fn part2_example() {
-    // 	assert_eq!(0, part2(EXAMPLE));
-    // }
+    #[test]
+    pub fn part2_example() {
+        assert_eq!(93, part2(EXAMPLE));
+    }
 }
