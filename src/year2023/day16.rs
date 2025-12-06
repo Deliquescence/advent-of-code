@@ -55,26 +55,35 @@ fn next_coords(at: (usize, usize), going: Direction, n: usize) -> Option<(usize,
     }
 }
 
-fn mark(at: (usize, usize), going: Direction, grid: &Grid, energized: &mut Box<[Box<[bool]>]>) {
+fn mark(
+    at: (usize, usize),
+    going: Direction,
+    grid: &Grid,
+    energized: &mut Box<[Box<[Vec<Direction>]>]>,
+) {
     println!("{:?} hit by going {:?}", at, going);
 
-    energized[at.0][at.1] = true;
-    for next_dir in next_directions(going, grid[at.0][at.1]).iter() {
-        if let Some(next) = next_coords(at, *next_dir, grid.len()) {
-            mark(next, *next_dir, grid, energized);
+    if !energized[at.0][at.1].contains(&going) {
+        energized[at.0][at.1].push(going);
+
+        for next_dir in next_directions(going, grid[at.0][at.1]).iter() {
+            if let Some(next) = next_coords(at, *next_dir, grid.len()) {
+                mark(next, *next_dir, grid, energized);
+            }
         }
     }
 }
 
 pub fn part1(input: &str) -> usize {
     let grid = parse_grid(input);
-    let mut energized: Box<[Box<[bool]>]> = vec![vec![false; grid.len()].into(); grid.len()].into();
+    let mut energized: Box<[Box<[Vec<Direction>]>]> =
+        vec![vec![Vec::with_capacity(4); grid.len()].into(); grid.len()].into();
     mark((0, 0), Direction::Right, &grid, &mut energized);
 
     energized
         .iter()
         .flat_map(|r| r.iter())
-        .filter(|b| **b)
+        .filter(|m| !m.is_empty())
         .count()
 }
 
