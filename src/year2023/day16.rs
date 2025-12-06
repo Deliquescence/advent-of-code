@@ -1,3 +1,5 @@
+use std::iter;
+
 type Tile = u8;
 type Grid = Box<[Box<[Tile]>]>;
 
@@ -61,7 +63,7 @@ fn mark(
     grid: &Grid,
     energized: &mut Box<[Box<[Vec<Direction>]>]>,
 ) {
-    println!("{:?} hit by going {:?}", at, going);
+    // println!("{:?} hit by going {:?}", at, going);
 
     if !energized[at.0][at.1].contains(&going) {
         energized[at.0][at.1].push(going);
@@ -74,11 +76,10 @@ fn mark(
     }
 }
 
-pub fn part1(input: &str) -> usize {
-    let grid = parse_grid(input);
+fn count(grid: &Grid, start_at: (usize, usize), start_going: Direction) -> usize {
     let mut energized: Box<[Box<[Vec<Direction>]>]> =
         vec![vec![Vec::with_capacity(4); grid.len()].into(); grid.len()].into();
-    mark((0, 0), Direction::Right, &grid, &mut energized);
+    mark(start_at, start_going, grid, &mut energized);
 
     energized
         .iter()
@@ -87,15 +88,30 @@ pub fn part1(input: &str) -> usize {
         .count()
 }
 
+pub fn part1(input: &str) -> usize {
+    let grid = parse_grid(input);
+
+    count(&grid, (0, 0), Direction::Right)
+}
+
 #[allow(dead_code, unused_variables)]
 pub fn part2(input: &str) -> usize {
-    todo!();
+    let grid = parse_grid(input);
+
+    iter::empty()
+        .chain((0..grid.len()).map(|i| ((0, i), Direction::Down)))
+        .chain((0..grid.len()).map(|i| ((grid.len() - 1, i), Direction::Up)))
+        .chain((0..grid.len()).map(|i| ((i, 0), Direction::Right)))
+        .chain((0..grid.len()).map(|i| ((i, grid.len() - 1), Direction::Left)))
+        .map(|(start_at, start_going)| count(&grid, start_at, start_going))
+        .max()
+        .unwrap()
 }
 
 pub fn main() {
     let input = std::fs::read_to_string("input/2023/day16.txt").unwrap();
     dbg!(part1(&input));
-    // dbg!(part2(&input));
+    dbg!(part2(&input));
 }
 
 #[cfg(test)]
@@ -118,8 +134,8 @@ mod tests {
         assert_eq!(46, part1(EXAMPLE));
     }
 
-    // #[test]
-    // pub fn part2_example() {
-    // 	assert_eq!(0, part2(EXAMPLE));
-    // }
+    #[test]
+    pub fn part2_example() {
+        assert_eq!(51, part2(EXAMPLE));
+    }
 }
