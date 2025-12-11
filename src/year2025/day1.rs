@@ -1,26 +1,16 @@
 pub fn main() {
     let input = std::fs::read_to_string("input/2025/day1.txt").unwrap();
     dbg!(part1(&input));
-    // dbg!(part2(&input));
+    dbg!(part2(&input));
 }
 
 pub fn part1(input: &str) -> usize {
-    let turns: Vec<isize> = input
-        .split_ascii_whitespace()
-        .map(|s| {
-            let (d, amt) = s.split_at(1);
-            match d {
-                "L" => -amt.parse::<isize>().unwrap(),
-                "R" => amt.parse().unwrap(),
-                _ => panic!("unexpected prefix {d}"),
-            }
-        })
-        .collect();
+    let turns = parse_turns(input);
 
     let mut pos = 50;
     let mut n_zeros = 0;
-    for turn in turns.iter() {
-        pos += turn + 100;
+    for turn in turns {
+        pos += turn;
         pos %= 100;
 
         if pos == 0 {
@@ -32,8 +22,43 @@ pub fn part1(input: &str) -> usize {
 }
 
 #[allow(dead_code, unused_variables)]
-pub fn part2(input: &str) -> usize {
-    todo!();
+pub fn part2(input: &str) -> isize {
+    let turns = parse_turns(input);
+
+    let mut pos = 50;
+    let mut n_zero_transitions = 0;
+    for turn in turns {
+        // dbg!(pos, turn);
+
+        let orig = pos;
+        n_zero_transitions += turn.abs() / 100;
+        pos += turn % 100;
+
+        if pos <= 0 {
+            if orig > 0 {
+                n_zero_transitions += 1;
+            }
+            pos = (pos + 100) % 100;
+        } else if pos >= 100 {
+            n_zero_transitions += 1;
+            pos %= 100;
+        }
+
+        // dbg!(n_zero_transitions);
+    }
+
+    n_zero_transitions
+}
+
+fn parse_turns(input: &str) -> impl Iterator<Item = isize> + use<'_> {
+    input.split_ascii_whitespace().map(|s| {
+        let (d, amt) = s.split_at(1);
+        match d {
+            "L" => -amt.parse::<isize>().unwrap(),
+            "R" => amt.parse().unwrap(),
+            _ => panic!("unexpected prefix {d}"),
+        }
+    })
 }
 
 #[cfg(test)]
@@ -57,8 +82,8 @@ L82
         assert_eq!(3, part1(EXAMPLE));
     }
 
-    // #[test]
-    // pub fn part2_example() {
-    // 	assert_eq!(0, part2(EXAMPLE));
-    // }
+    #[test]
+    pub fn part2_example() {
+        assert_eq!(6, part2(EXAMPLE));
+    }
 }
