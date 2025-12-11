@@ -1,3 +1,9 @@
+pub fn main() {
+    let input = std::fs::read_to_string("input/2025/day1.txt").unwrap();
+    dbg!(part1(&input));
+    // dbg!(part2(&input));
+}
+
 pub fn part1(input: &str) -> usize {
     let turns: Vec<isize> = input
         .split_ascii_whitespace()
@@ -28,12 +34,6 @@ pub fn part1(input: &str) -> usize {
 #[allow(dead_code, unused_variables)]
 pub fn part2(input: &str) -> usize {
     todo!();
-}
-
-pub fn main() {
-    let input = std::fs::read_to_string("input/2025/day1.txt").unwrap();
-    dbg!(part1(&input));
-    // dbg!(part2(&input));
 }
 
 #[cfg(test)]
