@@ -1,7 +1,7 @@
 pub fn main() {
     let input = std::fs::read_to_string("input/2025/day3.txt").unwrap();
     dbg!(part1(&input));
-    // dbg!(part2(&input));
+    dbg!(part2(&input));
 }
 
 pub fn part1(input: &str) -> usize {
@@ -32,7 +32,23 @@ pub fn part1(input: &str) -> usize {
 
 #[allow(dead_code, unused_variables)]
 pub fn part2(input: &str) -> usize {
-    todo!();
+    input
+        .split_ascii_whitespace()
+        .map(|bank| {
+            let bank = bank.as_bytes();
+            let mut max = vec![0_u8; 12];
+            'outer: for i_b in 0..bank.len() {
+                let min_i_m = 12_usize.saturating_sub(bank.len() - i_b);
+                for i_m in min_i_m..12 {
+                    if bank[i_b + i_m - min_i_m] > max[i_m] {
+                        max[i_m..].copy_from_slice(&bank[i_b + i_m - min_i_m..i_b + 12 - min_i_m]);
+                        continue 'outer;
+                    }
+                }
+            }
+            String::from_utf8(max).unwrap().parse::<usize>().unwrap()
+        })
+        .sum()
 }
 
 #[cfg(test)]
@@ -49,8 +65,8 @@ mod tests {
         assert_eq!(357, part1(EXAMPLE));
     }
 
-    // #[test]
-    // pub fn part2_example() {
-    // 	assert_eq!(0, part2(EXAMPLE));
-    // }
+    #[test]
+    pub fn part2_example() {
+        assert_eq!(3121910778619, part2(EXAMPLE));
+    }
 }
