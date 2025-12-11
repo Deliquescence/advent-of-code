@@ -7,26 +7,7 @@ pub fn main() {
 pub fn part1(input: &str) -> usize {
     input
         .split_ascii_whitespace()
-        .map(|bank| {
-            let bank = bank.as_bytes();
-            let mut lmax = 0;
-            let mut rmax = 0;
-            for i in 0..bank.len() - 1 {
-                if bank[i] > lmax {
-                    lmax = bank[i];
-                    rmax = bank[i + 1];
-                } else if bank[i] > rmax {
-                    rmax = bank[i];
-                }
-            }
-            if bank[bank.len() - 1] > rmax {
-                rmax = bank[bank.len() - 1];
-            }
-            String::from_utf8(vec![lmax, rmax])
-                .unwrap()
-                .parse::<usize>()
-                .unwrap()
-        })
+        .map(|bank| largest(bank, 2))
         .sum()
 }
 
@@ -34,21 +15,23 @@ pub fn part1(input: &str) -> usize {
 pub fn part2(input: &str) -> usize {
     input
         .split_ascii_whitespace()
-        .map(|bank| {
-            let bank = bank.as_bytes();
-            let mut max = vec![0_u8; 12];
-            'outer: for i_b in 0..bank.len() {
-                let min_i_m = 12_usize.saturating_sub(bank.len() - i_b);
-                for i_m in min_i_m..12 {
-                    if bank[i_b + i_m - min_i_m] > max[i_m] {
-                        max[i_m..].copy_from_slice(&bank[i_b + i_m - min_i_m..i_b + 12 - min_i_m]);
-                        continue 'outer;
-                    }
-                }
-            }
-            String::from_utf8(max).unwrap().parse::<usize>().unwrap()
-        })
+        .map(|bank| largest(bank, 12))
         .sum()
+}
+
+fn largest(bank: &str, len: usize) -> usize {
+    let bank = bank.as_bytes();
+    let mut max = vec![0_u8; len];
+    'outer: for i_b in 0..bank.len() {
+        let min_i_m = len.saturating_sub(bank.len() - i_b);
+        for i_m in min_i_m..len {
+            if bank[i_b + i_m - min_i_m] > max[i_m] {
+                max[i_m..].copy_from_slice(&bank[i_b + i_m - min_i_m..i_b + len - min_i_m]);
+                continue 'outer;
+            }
+        }
+    }
+    String::from_utf8(max).unwrap().parse::<usize>().unwrap()
 }
 
 #[cfg(test)]
