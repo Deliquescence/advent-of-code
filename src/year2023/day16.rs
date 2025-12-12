@@ -50,11 +50,7 @@ fn next_coords(at: (usize, usize), going: Direction, n: usize) -> Option<(usize,
     let offset = going.as_offset();
     let i = at.0.checked_add_signed(offset.0)?;
     let j = at.1.checked_add_signed(offset.1)?;
-    if i < n && j < n {
-        Some((i, j))
-    } else {
-        None
-    }
+    if i < n && j < n { Some((i, j)) } else { None }
 }
 
 fn mark(
