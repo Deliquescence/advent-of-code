@@ -11,6 +11,7 @@ struct Graph {
 }
 
 impl Graph {
+    #[allow(clippy::needless_range_loop)]
     fn dijkstra(&self) -> (Vec<u32>, Vec<Option<usize>>) {
         let mut distance: Vec<u32> = vec![u32::MAX; self.vertices.len()];
         let mut previous: Vec<Option<usize>> = vec![None; self.vertices.len()];
@@ -47,6 +48,7 @@ fn dijkstra_path(previous: &[Option<usize>], from: usize) -> Vec<usize> {
     path
 }
 
+#[allow(clippy::needless_range_loop)]
 fn parse_grid(input: &str) -> Graph {
     let grid: Vec<Vec<u8>> = input.lines().map(|l| l.as_bytes().into()).collect();
     let height = grid.len();
