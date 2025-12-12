@@ -1,22 +1,45 @@
-use std::{ops::Index, str::FromStr};
+use std::{
+    ops::{Index, IndexMut},
+    str::FromStr,
+};
 
 pub fn main() {
     let input = std::fs::read_to_string("input/2025/day4.txt").unwrap();
     dbg!(part1(&input));
-    // dbg!(part2(&input));
+    dbg!(part2(&input));
 }
 
 pub fn part1(input: &str) -> usize {
     let grid: Grid = input.parse().unwrap();
 
     grid.indices()
-        .filter(|idx| grid[*idx] && grid.neighbors(idx.0, idx.1).filter(|b| *b).count() < 4)
+        .filter(|idx| is_accessible(&grid, *idx))
         .count()
 }
 
 #[allow(dead_code, unused_variables)]
 pub fn part2(input: &str) -> usize {
-    todo!();
+    let mut grid: Grid = input.parse().unwrap();
+    let mut removed = 0;
+
+    loop {
+        let remove: Vec<_> = grid
+            .indices()
+            .filter(|idx| is_accessible(&grid, *idx))
+            .collect();
+
+        removed += remove.len();
+        if remove.is_empty() {
+            break removed;
+        }
+        for idx in remove {
+            grid[idx] = false;
+        }
+    }
+}
+
+fn is_accessible(grid: &Grid, idx: (usize, usize)) -> bool {
+    grid[idx] && grid.neighbors(idx.0, idx.1).filter(|b| *b).count() < 4
 }
 
 struct Grid {
@@ -29,6 +52,12 @@ impl Index<(usize, usize)> for Grid {
 
     fn index(&self, index: (usize, usize)) -> &Self::Output {
         &self.cells[index.1 * self.width + index.0]
+    }
+}
+
+impl IndexMut<(usize, usize)> for Grid {
+    fn index_mut(&mut self, index: (usize, usize)) -> &mut Self::Output {
+        &mut self.cells[index.1 * self.width + index.0]
     }
 }
 
@@ -92,8 +121,8 @@ mod tests {
         assert_eq!(13, part1(EXAMPLE));
     }
 
-    // #[test]
-    // pub fn part2_example() {
-    // 	assert_eq!(0, part2(EXAMPLE));
-    // }
+    #[test]
+    pub fn part2_example() {
+        assert_eq!(43, part2(EXAMPLE));
+    }
 }
