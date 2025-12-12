@@ -42,7 +42,7 @@ impl Value {
             }
             Ok(Value::List(values))
         } else {
-            atoi::atoi(str_bytes).ok_or(()).map(|u| Value::Integer(u))
+            atoi::atoi(str_bytes).ok_or(()).map(Value::Integer)
         }
     }
 }
@@ -51,7 +51,7 @@ impl Display for Value {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
             Value::Integer(u) => write!(f, "{u}"),
-            Value::List(values) => Ok({
+            Value::List(values) => {
                 write!(f, "[")?;
                 for v in values.iter().take(values.len().saturating_sub(1)) {
                     write!(f, "{v},")?;
@@ -60,7 +60,9 @@ impl Display for Value {
                     write!(f, "{v}")?;
                 }
                 write!(f, "]")?;
-            }),
+
+                Ok(())
+            }
         }
     }
 }
@@ -90,8 +92,7 @@ impl Ord for Value {
                         Left(_) => std::cmp::Ordering::Greater,
                         Right(_) => std::cmp::Ordering::Less,
                     })
-                    .filter(|&ord| ord != std::cmp::Ordering::Equal)
-                    .next()
+                    .find(|&ord| ord != std::cmp::Ordering::Equal)
                     .unwrap_or(std::cmp::Ordering::Equal)
             }
             (Value::Integer(s), Value::List(_)) => Value::List(vec![Value::Integer(*s)]).cmp(other),

@@ -157,14 +157,14 @@ abdefghi";
 
     #[test]
     pub fn part1_example() {
-        let graph = parse_grid(&EXAMPLE);
+        let graph = parse_grid(EXAMPLE);
         let (distance, previous) = graph.dijkstra();
         assert_eq!(31, part1(&graph, &distance, &previous));
     }
 
     #[test]
     pub fn part2_example() {
-        let graph = parse_grid(&EXAMPLE);
+        let graph = parse_grid(EXAMPLE);
         let (distance, previous) = graph.dijkstra();
         assert_eq!(29, part2(&graph, &distance, &previous));
     }

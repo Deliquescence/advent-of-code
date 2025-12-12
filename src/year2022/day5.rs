@@ -30,12 +30,12 @@ pub fn parse_crates(input: &str) -> Vec<Vec<Item>> {
         .expect("stack headers are ints");
     let mut stacks = vec![Vec::with_capacity(unparsed_lines.len()); n_stacks];
 
-    for n in 0..n_stacks {
+    for (n, stack) in stacks.iter_mut().enumerate().take(n_stacks) {
         let i_horizontal = (n * 4) + 1;
         for i_line in (0..unparsed_lines.len() - 1).rev() {
             let item = unparsed_lines[i_line].as_bytes()[i_horizontal];
             if item != b' ' {
-                stacks[n].push(item);
+                stack.push(item);
             }
         }
     }
@@ -55,7 +55,7 @@ pub fn parse_instructions(input: &str) -> Vec<Instruction> {
         .iter()
         .map(|l| {
             l.chars()
-                .filter(|c| c.is_digit(10) || c.is_whitespace())
+                .filter(|c| c.is_ascii_digit() || c.is_whitespace())
                 .collect::<String>()
         })
         .map(|s| {

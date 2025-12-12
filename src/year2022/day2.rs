@@ -135,7 +135,7 @@ mod tests {
         let input = r"A Y
 B X
 C Z";
-        assert_eq!(15, part1(&input));
+        assert_eq!(15, part1(input));
     }
 
     #[test]
@@ -143,7 +143,7 @@ C Z";
         let input = r"A Y
 B X
 C Z";
-        assert_eq!(12, part2(&input));
+        assert_eq!(12, part2(input));
     }
 
     #[test]

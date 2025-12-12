@@ -97,10 +97,7 @@ pub fn parse_cd(unparsed_lines: &mut VecDeque<&str>) -> Directory {
         let child = dir
             .children
             .iter_mut()
-            .find(|c| match c {
-                Tree::Directory(d) if d.name == child_name => true,
-                _ => false,
-            })
+            .find(|c| matches!(c, Tree::Directory(d) if d.name == child_name))
             .expect("cd into dir from ls");
         let child_dir = parse_cd(unparsed_lines);
         unparsed_lines.pop_front();
@@ -203,8 +200,8 @@ $ ls
             Tree::File(_) => panic!("expected 'a' to be directory"),
             Tree::Directory(dir_a) => {
                 assert_eq!("a", dir_a.name);
-                assert_children_names(&dir_a, vec!["e", "f", "g", "h.lst"]);
-                assert_children_sizes(&dir_a, vec![584, 29116, 2557, 62596]);
+                assert_children_names(dir_a, vec!["e", "f", "g", "h.lst"]);
+                assert_children_sizes(dir_a, vec![584, 29116, 2557, 62596]);
 
                 match &dir_a.children[0] {
                     Tree::File(_) => panic!("expected 'e' to be directory"),
@@ -212,8 +209,8 @@ $ ls
                         assert_eq!("e", dir_e.name);
                         assert_eq!(584, dir_e.size());
 
-                        assert_children_names(&dir_e, vec!["i"]);
-                        assert_children_sizes(&dir_e, vec![584]);
+                        assert_children_names(dir_e, vec!["i"]);
+                        assert_children_sizes(dir_e, vec![584]);
                     }
                 }
             }
@@ -223,8 +220,8 @@ $ ls
             Tree::File(_) => panic!("expected 'd' to be directory"),
             Tree::Directory(dir_d) => {
                 assert_eq!("d", dir_d.name);
-                assert_children_names(&dir_d, vec!["j", "d.log", "d.ext", "k"]);
-                assert_children_sizes(&dir_d, vec![4060174, 8033020, 5626152, 7214296]);
+                assert_children_names(dir_d, vec!["j", "d.log", "d.ext", "k"]);
+                assert_children_sizes(dir_d, vec![4060174, 8033020, 5626152, 7214296]);
             }
         }
     }

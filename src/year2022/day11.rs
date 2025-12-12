@@ -93,7 +93,7 @@ enum Part {
 }
 
 fn monkey_around(monkeys: &mut [Monkey], part: Part) {
-    let common_multiple = monkeys.iter().map(|m| m.test_divisor).fold(1, |a, x| a * x);
+    let common_multiple = monkeys.iter().map(|m| m.test_divisor).product::<u64>();
     for i in 0..monkeys.len() {
         for item in std::mem::take(&mut monkeys[i].items) {
             monkeys[i].num_inspects += 1;

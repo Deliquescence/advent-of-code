@@ -39,7 +39,7 @@ impl<const WIDTH: usize, const HEIGHT: usize> Display for Grid<WIDTH, HEIGHT> {
                     write!(f, ".")?
                 }
             }
-            write!(f, "\n")?
+            writeln!(f)?
         }
         Ok(())
     }
@@ -70,7 +70,7 @@ impl<const WIDTH: usize, const HEIGHT: usize> FromStr for Grid<WIDTH, HEIGHT> {
         };
         let coords = s
             .lines()
-            .map(|l| {
+            .flat_map(|l| {
                 ROCK_REGEX
                     .captures_iter(l)
                     .filter_map(|c| {
@@ -80,8 +80,7 @@ impl<const WIDTH: usize, const HEIGHT: usize> FromStr for Grid<WIDTH, HEIGHT> {
                     })
                     .tuple_windows()
                     .flat_map(|(l, r)| enumerate_line(l, r))
-            })
-            .flatten();
+            });
 
         for c in coords {
             grid[c] = true;
@@ -110,12 +109,12 @@ impl<const WIDTH: usize, const HEIGHT: usize> Grid<WIDTH, HEIGHT> {
             if c.1 >= HEIGHT - 1 || c.0 == 0 || c.0 >= WIDTH - 1 {
                 break false;
             }
-            if self[(c.0, c.1 + 1)] == false {
+            if !self[(c.0, c.1 + 1)] {
                 c.1 += 1;
-            } else if self[(c.0 - 1, c.1 + 1)] == false {
+            } else if !self[(c.0 - 1, c.1 + 1)] {
                 c.0 -= 1;
                 c.1 += 1;
-            } else if self[(c.0 + 1, c.1 + 1)] == false {
+            } else if !self[(c.0 + 1, c.1 + 1)] {
                 c.0 += 1;
                 c.1 += 1;
             } else {
