@@ -3,7 +3,7 @@ use hashbag::HashBag;
 pub fn find_distinct(input: &str, window_size: usize) -> usize {
     let data = input.trim().as_bytes();
     let mut window = HashBag::with_capacity(window_size);
-    for d in data.iter().take(window_size){
+    for d in data.iter().take(window_size) {
         window.insert(*d);
     }
     for i in window_size..data.len() {

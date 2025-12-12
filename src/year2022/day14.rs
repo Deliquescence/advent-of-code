@@ -68,19 +68,17 @@ impl<const WIDTH: usize, const HEIGHT: usize> FromStr for Grid<WIDTH, HEIGHT> {
         let mut grid = Grid::<WIDTH, HEIGHT> {
             cells: vec![false; WIDTH * HEIGHT],
         };
-        let coords = s
-            .lines()
-            .flat_map(|l| {
-                ROCK_REGEX
-                    .captures_iter(l)
-                    .filter_map(|c| {
-                        c[1].parse()
-                            .and_then(|x: usize| c[2].parse().map(|y: usize| (x, y)))
-                            .ok()
-                    })
-                    .tuple_windows()
-                    .flat_map(|(l, r)| enumerate_line(l, r))
-            });
+        let coords = s.lines().flat_map(|l| {
+            ROCK_REGEX
+                .captures_iter(l)
+                .filter_map(|c| {
+                    c[1].parse()
+                        .and_then(|x: usize| c[2].parse().map(|y: usize| (x, y)))
+                        .ok()
+                })
+                .tuple_windows()
+                .flat_map(|(l, r)| enumerate_line(l, r))
+        });
 
         for c in coords {
             grid[c] = true;
