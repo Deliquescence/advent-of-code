@@ -66,7 +66,7 @@ impl FromStr for PairAssignments {
 mod tests {
     use super::*;
 
-    const EXAMPLE: &'static str = r"2-4,6-8
+    const EXAMPLE: &str = r"2-4,6-8
 2-3,4-5
 5-7,7-9
 2-8,3-7

@@ -81,7 +81,7 @@ pub fn parse_tree(input: &str) -> Directory {
 }
 
 pub fn parse_cd(unparsed_lines: &mut VecDeque<&str>) -> Directory {
-    const PROMPT: &'static str = "$ cd ";
+    const PROMPT: &str = "$ cd ";
     let parent_line = unparsed_lines.pop_front().expect("more to do");
     assert!(parent_line.starts_with(PROMPT));
     let name = parent_line[PROMPT.len()..].to_string();
@@ -165,7 +165,7 @@ pub fn main() {
 mod tests {
     use super::*;
 
-    const EXAMPLE: &'static str = r"
+    const EXAMPLE: &str = r"
 $ cd /
 $ ls
 dir a
@@ -229,7 +229,7 @@ $ ls
         }
     }
 
-    fn assert_children_names(directory: &Directory, expected: Vec<&'static str>) {
+    fn assert_children_names(directory: &Directory, expected: Vec<&str>) {
         assert_eq!(
             expected,
             directory

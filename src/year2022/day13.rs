@@ -148,7 +148,7 @@ pub fn main() {
 mod tests {
     use super::*;
 
-    const EXAMPLE: &'static str = r"[1,1,3,1,1]
+    const EXAMPLE: &str = r"[1,1,3,1,1]
 [1,1,5,1,1]
 
 [[1],[2,3,4]]

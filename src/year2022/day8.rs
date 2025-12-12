@@ -105,7 +105,7 @@ pub fn main() {
 mod tests {
     use super::*;
 
-    const EXAMPLE: &'static str = r"
+    const EXAMPLE: &str = r"
 30373
 25512
 65332

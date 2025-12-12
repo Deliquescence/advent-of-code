@@ -153,7 +153,7 @@ mod tests {
         sack.misplaced_item().unwrap()
     }
 
-    const EXAMPLE_SACKS: &'static str = r"vJrwpWtwJgWrhcsFMMfFFhFp
+    const EXAMPLE_SACKS: &str = r"vJrwpWtwJgWrhcsFMMfFFhFp
 jqHRNqRjqzjGDLGLrsFMfFZSrLrFZsSL
 PmmdzqPrVvPwwTWBwg
 wMqvLMZHhHMvwLHjbvcjnnSBnvTQFn

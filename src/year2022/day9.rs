@@ -129,7 +129,7 @@ pub fn main() {
 mod tests {
     use super::*;
 
-    const EXAMPLE1: &'static str = r"
+    const EXAMPLE1: &str = r"
 R 4
 U 4
 L 3
@@ -139,7 +139,7 @@ D 1
 L 5
 R 2";
 
-    const EXAMPLE2: &'static str = r"
+    const EXAMPLE2: &str = r"
 R 5
 U 8
 L 8

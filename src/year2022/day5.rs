@@ -114,7 +114,7 @@ pub fn main() {
 mod tests {
     use super::*;
 
-    const EXAMPLE: &'static str = r"
+    const EXAMPLE: &str = r"
     [D]    
 [N] [C]    
 [Z] [M] [P]

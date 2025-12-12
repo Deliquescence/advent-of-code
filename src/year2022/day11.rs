@@ -148,7 +148,7 @@ pub fn main() {
 mod tests {
     use super::*;
 
-    const EXAMPLE: &'static str = r"Monkey 0:
+    const EXAMPLE: &str = r"Monkey 0:
   Starting items: 79, 98
   Operation: new = old * 19
   Test: divisible by 23

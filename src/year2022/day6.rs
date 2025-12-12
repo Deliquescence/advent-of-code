@@ -35,11 +35,11 @@ pub fn main() {
 mod tests {
     use super::*;
 
-    const EXAMPLE1: &'static str = r"mjqjpqmgbljsphdztnvjfqwrcgsmlb";
-    const EXAMPLE2: &'static str = r"bvwbjplbgvbhsrlpgdmjqwftvncz";
-    const EXAMPLE3: &'static str = r"nppdvjthqldpwncqszvftbrmjlhg";
-    const EXAMPLE4: &'static str = r"nznrnfrfntjfmvfwmzdfjlvtqnbhcprsg";
-    const EXAMPLE5: &'static str = r"zcfzfwzzqfrljwzlrfnpqdbhtmscgvjw";
+    const EXAMPLE1: &str = r"mjqjpqmgbljsphdztnvjfqwrcgsmlb";
+    const EXAMPLE2: &str = r"bvwbjplbgvbhsrlpgdmjqwftvncz";
+    const EXAMPLE3: &str = r"nppdvjthqldpwncqszvftbrmjlhg";
+    const EXAMPLE4: &str = r"nznrnfrfntjfmvfwmzdfjlvtqnbhcprsg";
+    const EXAMPLE5: &str = r"zcfzfwzzqfrljwzlrfnpqdbhtmscgvjw";
 
     #[test]
     pub fn part1_examples() {

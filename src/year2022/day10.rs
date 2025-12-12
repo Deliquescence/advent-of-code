@@ -123,7 +123,7 @@ pub fn main() {
 mod tests {
     use super::*;
 
-    const EXAMPLE: &'static str = r"noop
+    const EXAMPLE: &str = r"noop
 addx 3
 addx -5";
 
@@ -168,7 +168,7 @@ addx -5";
         assert_eq!(13140, part1(&input));
     }
 
-    const PART2_EXPECTED: &'static str = r"##..##..##..##..##..##..##..##..##..##..
+    const PART2_EXPECTED: &str = r"##..##..##..##..##..##..##..##..##..##..
 ###...###...###...###...###...###...###.
 ####....####....####....####....####....
 #####.....#####.....#####.....#####.....
