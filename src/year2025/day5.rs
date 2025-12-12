@@ -21,10 +21,8 @@ pub fn part1(input: &str) -> usize {
 #[allow(dead_code, unused_variables)]
 pub fn part2(input: &str) -> usize {
     let (ranges, _items) = parse(input);
-    let ranges = ranges.collect::<Vec<_>>();
-    let mut unmerged = ranges.clone();
-    unmerged.sort_unstable_by_key(|r| (*r.start(), *r.end()));
-    let mut merged = Vec::<RangeInclusive<usize>>::new();
+    let mut unmerged = ranges.collect::<Vec<_>>();
+    let mut merged = Vec::<RangeInclusive<usize>>::with_capacity(unmerged.len());
 
     let mut prev_len;
     loop {
